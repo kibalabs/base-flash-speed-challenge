@@ -43,10 +43,6 @@ export function HomePage(): React.ReactElement {
   const [currentEntry, setCurrentEntry] = React.useState<LeaderboardEntry | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
 
-  const onConnectClicked = React.useCallback((): void => {
-    onLinkAccountsClicked();
-  }, [onLinkAccountsClicked]);
-
   const onSwitchNetworkClicked = React.useCallback(async (): Promise<void> => {
     try {
       // @ts-ignore
@@ -123,6 +119,12 @@ export function HomePage(): React.ReactElement {
             <Text variant='large' alignment={TextAlignment.Center}>Connect your wallet to get started.</Text>
           </Stack>
           <Spacing variant={PaddingSize.Wide} />
+          <Button
+            variant='secondary'
+            text='View Leaderboard'
+            onClicked={(): void => navigator.navigateTo('/leaderboard')}
+          />
+          <Spacing variant={PaddingSize.Wide2} />
           {account === undefined && (
             <Text>Please use this app on a browser with a wallet connected.</Text>
           )}
@@ -130,7 +132,7 @@ export function HomePage(): React.ReactElement {
             <Button
               variant='primary'
               text='Connect Wallet'
-              onClicked={onConnectClicked}
+              onClicked={onLinkAccountsClicked}
             />
           ) : chainId !== BASE_SEPOLIA_CHAIN_ID && (
             <Button
