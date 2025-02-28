@@ -237,7 +237,8 @@ export function HomePage(): React.ReactElement {
                         + `Position: #${currentEntry.position}\n`
                         + `Reaction time: ${currentEntry.reactionMillis}ms\n`
                         + `FlashBlock time: ${currentEntry.flashBlockMillis}ms\n\n`
-                        + 'Try to beat me at https://base-flash-speed-challenge.tokenpage.xyz';
+                        + 'Try to beat me at https://base-flash-speed-challenge.tokenpage.xyz\n\n'
+                        + '#baseflash with @krishan711';
                       const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
                       window.open(tweetUrl, '_blank');
                     }}
