@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, getVariant, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, getVariant, PaddingSize, ResponsiveHidingView, ScreenSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 
 import { AccountView } from '../components/AccountView';
 
@@ -51,8 +51,10 @@ export function LeaderboardPage(): React.ReactElement {
 
   return (
     <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true}>
+      <Spacing variant={PaddingSize.Wide2} />
       <Text variant='header2'>🏆 Leaderboard 🏆</Text>
-      <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} shouldAddGutters={true}>
+      <Spacing variant={PaddingSize.Wide} />
+      <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} contentAlignment={Alignment.Center} defaultGutter={PaddingSize.Default}>
         <Button
           variant={orderBy === 'ratio' ? 'primary' : 'secondary'}
           text='By Ratio'
@@ -78,47 +80,68 @@ export function LeaderboardPage(): React.ReactElement {
       {isLoading ? (
         <Text>Loading...</Text>
       ) : (
-        <Box variant='card'>
-          <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-            <Stack direction={Direction.Horizontal} childAlignment={Alignment.Start} shouldAddGutters={true}>
-              <Box width='4em'><Text variant='bold'>Pos</Text></Box>
-              <Box width='8em'><Text variant='bold'>Address</Text></Box>
-              <Box width='8em'><Text variant='bold'>Reaction</Text></Box>
-              <Box width='8em'><Text variant='bold'>Flash Block</Text></Box>
-              <Box width='5em'><Text variant='bold'>Ratio</Text></Box>
-            </Stack>
-            {entries.map((entry: LeaderboardEntry) => (
-              <Stack key={entry.transactionHash} direction={Direction.Horizontal} childAlignment={Alignment.Start} shouldAddGutters={true}>
-                <Box width='4em'>
-                  <Text variant={getVariant('default', entry.position < 10 ? 'success' : entry.position < 100 ? 'mutedSuccess' : undefined)}>
-                    #
-                    {entry.position}
-                  </Text>
-                </Box>
-                <Box width='8em'>
-                  <AccountView address={entry.address} />
-                </Box>
-                <Box width='8em'>
-                  <Text variant={getVariant('default', entry.reactionMillis > 2000 ? 'error' : entry.reactionMillis > 1000 ? 'warning' : 'success')}>
-                    {entry.reactionMillis}
-                    ms
-                  </Text>
-                </Box>
-                <Box width='8em'>
-                  <Text variant='success'>
-                    {entry.flashBlockMillis}
-                    ms
-                  </Text>
-                </Box>
-                <Box width='5em'>
-                  <Text variant={getVariant('default', Math.abs(entry.ratio - 1) < 2 ? 'success' : undefined)}>
-                    {entry.ratio.toFixed(3)}
-                  </Text>
-                </Box>
+        <Stack.Item growthFactor={1} shrinkFactor={1} shouldShrinkBelowContentSize={true}>
+          <Box variant='card' isScrollableVertically={true}>
+            <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+              <Stack direction={Direction.Horizontal} childAlignment={Alignment.Start} shouldAddGutters={true}>
+                <Box width='3em'><Text variant='bold'>#</Text></Box>
+                <Box width='8em'><Text variant='bold'>Address</Text></Box>
+                <ResponsiveHidingView hiddenBelow={ScreenSize.Small}>
+                  <Box width='6em'><Text variant='bold'>Reaction</Text></Box>
+                </ResponsiveHidingView>
+                <ResponsiveHidingView hiddenBelow={ScreenSize.Medium}>
+                  <Box width='6em'><Text variant='bold'>Flash</Text></Box>
+                </ResponsiveHidingView>
+                <ResponsiveHidingView hiddenBelow={ScreenSize.Large}>
+                  <Box width='6em'><Text variant='bold'>Block</Text></Box>
+                </ResponsiveHidingView>
+                <Box width='4em'><Text variant='bold'>Ratio</Text></Box>
               </Stack>
-            ))}
-          </Stack>
-        </Box>
+              {entries.map((entry: LeaderboardEntry) => (
+                <Stack key={entry.transactionHash} direction={Direction.Horizontal} childAlignment={Alignment.Start} shouldAddGutters={true}>
+                  <Box width='3em'>
+                    <Text variant={getVariant('default', entry.position < 10 ? 'success' : entry.position < 100 ? 'mutedSuccess' : undefined)}>
+                      #
+                      {entry.position}
+                    </Text>
+                  </Box>
+                  <Box width='8em'>
+                    <AccountView address={entry.address} />
+                  </Box>
+                  <ResponsiveHidingView hiddenBelow={ScreenSize.Small}>
+                    <Box width='6em'>
+                      <Text variant={getVariant('default', entry.reactionMillis > 2000 ? 'error' : entry.reactionMillis > 1000 ? 'warning' : 'success')}>
+                        {entry.reactionMillis}
+                        ms
+                      </Text>
+                    </Box>
+                  </ResponsiveHidingView>
+                  <ResponsiveHidingView hiddenBelow={ScreenSize.Medium}>
+                    <Box width='6em'>
+                      <Text variant='success'>
+                        {entry.flashBlockMillis}
+                        ms
+                      </Text>
+                    </Box>
+                  </ResponsiveHidingView>
+                  <ResponsiveHidingView hiddenBelow={ScreenSize.Large}>
+                    <Box width='6em'>
+                      <Text variant='success'>
+                        {entry.blockMillis}
+                        ms
+                      </Text>
+                    </Box>
+                  </ResponsiveHidingView>
+                  <Box width='4em'>
+                    <Text variant={getVariant('default', Math.abs(entry.ratio - 1) < 2 ? 'success' : undefined)}>
+                      {entry.ratio.toFixed(2)}
+                    </Text>
+                  </Box>
+                </Stack>
+              ))}
+            </Stack>
+          </Box>
+        </Stack.Item>
       )}
       <Spacing variant={PaddingSize.Wide} />
       <Button
@@ -126,6 +149,7 @@ export function LeaderboardPage(): React.ReactElement {
         text='Back to Game'
         onClicked={(): void => navigator.navigateTo('/')}
       />
+      <Spacing variant={PaddingSize.Wide2} />
     </Stack>
   );
 }

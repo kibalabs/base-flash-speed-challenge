@@ -71,7 +71,6 @@ export const buildHookeTheme = (): ITheme => {
           default: {
             background: {
               'background-color': '$colors.brandPrimary',
-              'border-radius': '50%',
             },
             text: {
               color: 'white',
@@ -244,6 +243,8 @@ export const buildHookeTheme = (): ITheme => {
       tickerItem: {
         'background-color': '#171717',
         padding: '0.1em 1em',
+        'border-radius': '4px',
+        'will-change': 'transform, opacity',
       },
       empty: {
         'border-radius': '0',

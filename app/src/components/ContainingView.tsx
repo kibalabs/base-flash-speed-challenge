@@ -40,11 +40,13 @@ export function ContainingView(props: IContainingViewProps): React.ReactElement 
           <Box variant='navBar' zIndex={999} shouldClipContent={true} isFullWidth={true}>
             <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} isFullHeight={true} shouldAddGutters={true}>
               <LinkBase target='/'>
-                <Image source='/assets/icon.png' alternativeText='logo' height='32px' fitType='contain' />
+                <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} shouldAddGutters={true}>
+                  <Image source='/assets/icon.png' alternativeText='logo' height='32px' fitType='contain' />
+                  {!isChatPage && (
+                    <Text variant='bold-large'>FlashBlock Speed Challenge</Text>
+                  )}
+                </Stack>
               </LinkBase>
-              {!isChatPage && (
-                <Text variant='bold-large'>FlashBlock Speed Challenge</Text>
-              )}
               <Stack.Item growthFactor={1} shrinkFactor={1} shouldShrinkBelowContentSize={true}>
                 <ResponsiveHidingView hiddenAbove={ScreenSize.Medium}>
                   <Box shouldClipContent={true}>

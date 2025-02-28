@@ -108,7 +108,7 @@ export function HomePage(): React.ReactElement {
       <FlashBlockTicker />
       <Stack.Item growthFactor={1} shrinkFactor={1} />
       {!isConnected ? (
-        <React.Fragment>
+        <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} paddingHorizontal={PaddingSize.Wide}>
           <Spacing variant={PaddingSize.Wide2} />
           <Image height='3rem' alternativeText='BaseLogo' source='/assets/logo/wordmark/Base_Wordmark_Blue.png' />
           <Spacing variant={PaddingSize.Wide} />
@@ -141,9 +141,9 @@ export function HomePage(): React.ReactElement {
               onClicked={onSwitchNetworkClicked}
             />
           )}
-        </React.Fragment>
+        </Stack>
       ) : (
-        <React.Fragment>
+        <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} paddingHorizontal={PaddingSize.Wide}>
           <Spacing variant={PaddingSize.Wide2} />
           { !isSubmitting && !currentEntry && (
             <Box height='15em' width='15em'>
@@ -258,7 +258,7 @@ export function HomePage(): React.ReactElement {
               </Stack>
             </React.Fragment>
           )}
-        </React.Fragment>
+        </Stack>
       )}
       <Stack.Item growthFactor={1} shrinkFactor={1} />
       <Spacing variant={PaddingSize.Wide2} />
