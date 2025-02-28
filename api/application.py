@@ -29,11 +29,11 @@ challengeManager = ChallengeManager()
 
 
 async def startup() -> None:
-    pass
+    await challengeManager.connect()
 
 
 async def shutdown() -> None:
-    pass
+    await challengeManager.disconnect()
 
 
 app = Starlette(

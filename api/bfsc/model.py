@@ -11,3 +11,6 @@ class LeaderboardEntry(BaseModel):
     transactionHash: str
     flashBlockMillis: int
     blockMillis: int
+    reactionMillis: int
+    position: int
+    ratio: float

@@ -37,6 +37,7 @@ export const buildHookeTheme = (): ITheme => {
       background: '#000',
       brandPrimary: '#0052FF',
       warning: '#cf9f04',
+      mutedSuccess: '#00FF00',
     },
     dimensions: {
       borderRadius: '0.2em',

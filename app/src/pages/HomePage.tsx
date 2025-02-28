@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { dateToString } from '@kibalabs/core';
-import { Alignment, Box, Button, Direction, Image, MarkdownText, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, getVariant, Image, MarkdownText, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { useOnLinkWeb3AccountsClicked, useWeb3Account, useWeb3ChainId } from '@kibalabs/web3-react';
 
 import { FlashBlockTicker } from '../components/FlashBlockTicker';
@@ -13,8 +13,11 @@ interface LeaderboardEntry {
   submitDate: string;
   flashBlockMillis: string;
   blockMillis: string;
+  reactionMillis: number;
   blockNumber: number;
   transactionHash: string;
+  position: number;
+  ratio: number;
 }
 
 const BASE_SEPOLIA_CHAIN_ID = 84532;
@@ -105,6 +108,7 @@ export function HomePage(): React.ReactElement {
   return (
     <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} isFullHeight={true} isFullWidth={true} isScrollableVertically={true}>
       <FlashBlockTicker />
+      <Stack.Item growthFactor={1} shrinkFactor={1} />
       {!isConnected ? (
         <React.Fragment>
           <Spacing variant={PaddingSize.Wide2} />
@@ -134,7 +138,7 @@ export function HomePage(): React.ReactElement {
       ) : (
         <React.Fragment>
           <Spacing variant={PaddingSize.Wide2} />
-          { !isSubmitting && (
+          { !isSubmitting && !currentEntry && (
             <Box height='15em' width='15em'>
               <Button
                 variant='primary-go'
@@ -160,34 +164,91 @@ export function HomePage(): React.ReactElement {
               <Text variant='large' alignment={TextAlignment.Left}>1. Click the GO button</Text>
               <Text variant='large' alignment={TextAlignment.Left}>2. Check the message in your wallet (always check what you sign!!)</Text>
               <Text variant='large' alignment={TextAlignment.Left}>3. Sign the message.</Text>
-              <Text variant='large' alignment={TextAlignment.Left}>Our server will submit a transaction for you. The you watch it get included in a flashblock and then a full block.</Text>
+              <Text variant='large' alignment={TextAlignment.Left}>Our server will submit a transaction for you. Then you watch it get included in a flashblock and then a full block.</Text>
               <Text variant='large' alignment={TextAlignment.Left}>Check your position on the leaderboard and share!</Text>
             </Stack>
           ) : (
             <React.Fragment>
-              <Stack direction={Direction.Vertical} childAlignment={Alignment.Start} contentAlignment={Alignment.Start} shouldAddGutters={true}>
-                <Text variant='large-bold'>Your submission:</Text>
-                <Text>
-                  User time:
-                  {new Date(currentEntry.submitDate).getTime() - new Date(currentEntry.requestDate).getTime()}
-                  ms
-                </Text>
-                <Text>
-                  FlashBlock time:
-                  {currentEntry.flashBlockMillis}
-                  ms
-                </Text>
-                <Text>
-                  Transaction time:
-                  {currentEntry.blockMillis}
-                  ms
-                </Text>
-                <MarkdownText source={`Transaction: [${currentEntry.transactionHash.slice(0, 5)}...${currentEntry.transactionHash.slice(-5)}](https://sepolia.basescan.org/tx/${currentEntry.transactionHash})`} />
+              <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true}>
+                <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
+                  <Text variant='header2'>🏆</Text>
+                  <Text variant='header2'>Results</Text>
+                  <Text variant='header2'>🏆</Text>
+                </Stack>
+                <Spacing variant={PaddingSize.Wide} />
+                <Box variant='card'>
+                  <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true}>
+                    <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true}>
+                      <Text variant='header2'>Position:</Text>
+                      <Text variant={getVariant('header2', currentEntry.position < 10 ? 'success' : currentEntry.position < 100 ? 'mutedSuccess' : null)}>
+                        #
+                        {currentEntry.position}
+                      </Text>
+                      {currentEntry.position === 1 && <Text variant='header2'>👑</Text>}
+                    </Stack>
+                    <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true}>
+                      <Text variant='large-bold'>Ratio:</Text>
+                      <Text variant={getVariant('large', Math.abs(currentEntry.ratio - 1) < 2 ? 'success' : undefined)}>
+                        {currentEntry.ratio.toFixed(3)}
+                      </Text>
+                      <Text variant='large'>(closer to 1 is better)</Text>
+                    </Stack>
+                    <Spacing variant={PaddingSize.Wide} />
+                    <Stack direction={Direction.Vertical} childAlignment={Alignment.Start} contentAlignment={Alignment.Start} shouldAddGutters={true}>
+                      <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} shouldAddGutters={true}>
+                        <Text variant='large'>👇 Reaction time:</Text>
+                        <Text variant={getVariant('large-bold', currentEntry.reactionMillis > 2000 ? 'error' : currentEntry.reactionMillis > 1000 ? 'warning' : 'success')}>
+                          {currentEntry.reactionMillis}
+                          ms
+                        </Text>
+                      </Stack>
+                      <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} shouldAddGutters={true}>
+                        <Text variant='large'>⚡️ FlashBlock time:</Text>
+                        <Text variant={getVariant('large-bold', 'success')}>
+                          {currentEntry.flashBlockMillis}
+                          ms
+                        </Text>
+                      </Stack>
+                      <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} shouldAddGutters={true}>
+                        <Text variant='large'>⛓️ Transaction time:</Text>
+                        <Text variant={getVariant('large-bold', currentEntry.blockMillis > currentEntry.flashBlockMillis ? 'error' : 'success')}>
+                          {currentEntry.blockMillis}
+                          ms
+                        </Text>
+                      </Stack>
+                    </Stack>
+                    <Spacing variant={PaddingSize.Wide} />
+                    <MarkdownText textVariant='large' source={`🔍 View on [Base Sepolia Explorer](https://sepolia.basescan.org/tx/${currentEntry.transactionHash})`} />
+                  </Stack>
+                </Box>
+                <Spacing variant={PaddingSize.Wide} />
+                <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true}>
+                  <Button
+                    variant='secondary'
+                    text='Try Again'
+                    onClicked={(): void => setCurrentEntry(null)}
+                  />
+                  <Button
+                    variant='primary'
+                    text='Share'
+                    // iconLeft={<KibaIcon iconId='ion-logo-twitter' />}
+                    onClicked={(): void => {
+                      const text = '🏆 I just played @Base FlashBlock Speed Challenge!\n\n'
+                        + `Position: #${currentEntry.position}\n`
+                        + `Reaction time: ${currentEntry.reactionMillis}ms\n`
+                        + `FlashBlock time: ${currentEntry.flashBlockMillis}ms\n\n`
+                        + 'Try to beat me at https://base-flash-speed-challenge.tokenpage.xyz';
+                      const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+                      window.open(tweetUrl, '_blank');
+                    }}
+                  />
+                </Stack>
               </Stack>
             </React.Fragment>
           )}
         </React.Fragment>
       )}
+      <Stack.Item growthFactor={1} shrinkFactor={1} />
       <Spacing variant={PaddingSize.Wide2} />
       <MarkdownText textVariant='note' source='Built with ❤️ by [@krishan711](https://twitter.com/krishan711) on behalf of [@TokenPage](https://www.tokenpage.xyz)' />
       <Spacing variant={PaddingSize.Wide} />

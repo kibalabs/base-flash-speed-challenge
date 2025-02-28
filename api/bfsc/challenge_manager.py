@@ -1,7 +1,9 @@
+import datetime
 import os
 import time
 import typing
 
+import aiosqlite
 from core import logging
 from core.exceptions import NotFoundException
 from core.exceptions import UnauthorizedException
@@ -25,6 +27,62 @@ ethClient = RestEthClient(url='https://sepolia.base.org', requester=requester)
 readEthClient = RestEthClient(url='https://sepolia-preconf.base.org', requester=requester)
 privateKey = os.environ['PRIVATE_KEY']
 account = w3.eth.account.from_key(privateKey)
+databaseLocation = './data/leaderboard.db'
+
+
+async def init_db() -> None:
+    async with aiosqlite.connect(databaseLocation) as db:
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS submissions (
+                address TEXT NOT NULL,
+                request_date TEXT NOT NULL,
+                submit_date TEXT NOT NULL,
+                block_number INTEGER NOT NULL,
+                transaction_hash TEXT NOT NULL PRIMARY KEY,
+                flash_block_millis INTEGER NOT NULL,
+                block_millis INTEGER NOT NULL,
+                reaction_millis INTEGER NOT NULL,
+                ratio REAL NOT NULL
+            )
+        """)
+        await db.commit()
+
+
+async def get_position(ratio: float) -> int:
+    async with aiosqlite.connect(databaseLocation) as db:
+        cursor = await db.execute(
+            """
+            SELECT COUNT(*) + 1
+            FROM submissions
+            WHERE ABS(ratio - 1) < ABS(? - 1)
+        """,
+            (ratio,),
+        )
+        position = await cursor.fetchone()
+        return typing.cast(int, position[0])  # type: ignore[index]
+
+
+async def insert_submission(
+    address: str,
+    requestDate: datetime.datetime,
+    submitDate: datetime.datetime,
+    blockNumber: int,
+    transactionHash: str,
+    flashBlockMillis: int,
+    blockMillis: int,
+    reactionMillis: int,
+    ratio: float,
+) -> None:
+    async with aiosqlite.connect(databaseLocation) as db:
+        await db.execute(
+            """
+            INSERT INTO submissions
+            (address, request_date, submit_date, block_number, transaction_hash, flash_block_millis, block_millis, reaction_millis, ratio)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (address, date_util.datetime_to_string(dt=requestDate), date_util.datetime_to_string(dt=submitDate), blockNumber, transactionHash, flashBlockMillis, blockMillis, reactionMillis, ratio),
+        )
+        await db.commit()
 
 
 async def get_pending_block(ethClient: RestEthClient, shouldHydrateTransactions: bool = False) -> BlockData:
@@ -35,6 +93,12 @@ async def get_pending_block(ethClient: RestEthClient, shouldHydrateTransactions:
 
 
 class ChallengeManager:
+    async def connect(self) -> None:
+        await init_db()
+
+    async def disconnect(self) -> None:
+        pass
+
     async def submit(self, message: str, signature: str) -> LeaderboardEntry:
         submitDate = date_util.datetime_from_now()
         try:
@@ -78,8 +142,8 @@ class ChallengeManager:
             startTime = time.time()
             flashBlockSeconds: float = -1.0
             while time.time() - startTime < 10:  # noqa: PLR2004
-                pendingBlock = await get_pending_block(ethClient=readEthClient, shouldHydrateTransactions=False)
                 flashBlockSeconds = time.time() - startTime
+                pendingBlock = await get_pending_block(ethClient=readEthClient, shouldHydrateTransactions=False)
                 if any(transactionHash == f'0x{tx.hex()}' for tx in pendingBlock['transactions']):  # type: ignore[union-attr]
                     break
                 flashBlockSeconds = -1.0
@@ -88,12 +152,34 @@ class ChallengeManager:
         except Exception as error:  # noqa: BLE001
             logging.error(f'Error submitting transaction: {error!s}')
             raise UnauthorizedException('Failed to submit transaction')
+        if flashBlockSeconds < 0.0:
+            raise UnauthorizedException('Transaction not included in flashblock')
+        flashBlockMillis = int(flashBlockSeconds * 1000)
+        reactionMillis = int((submitDate - requestDate).total_seconds() * 1000)
+        ratio = reactionMillis / flashBlockMillis
+        blockMillis = int(blockSeconds * 1000)
+        blockNumber = transactionReceipt2['blockNumber']
+        await insert_submission(
+            address=signerAddress,
+            requestDate=requestDate,
+            submitDate=submitDate,
+            blockNumber=blockNumber,
+            transactionHash=transactionHash,
+            flashBlockMillis=flashBlockMillis,
+            blockMillis=blockMillis,
+            reactionMillis=reactionMillis,
+            ratio=ratio,
+        )
+        position = await get_position(ratio)
         return LeaderboardEntry(
             address=signerAddress,
             requestDate=requestDate,
             submitDate=submitDate,
-            flashBlockMillis=int(flashBlockSeconds * 1000),
-            blockMillis=int(blockSeconds * 1000),
+            flashBlockMillis=flashBlockMillis,
+            blockMillis=blockMillis,
+            reactionMillis=reactionMillis,
             transactionHash=transactionHash,
-            blockNumber=transactionReceipt2['blockNumber'],
+            blockNumber=blockNumber,
+            position=position,
+            ratio=ratio,
         )
