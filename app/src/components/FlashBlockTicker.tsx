@@ -23,8 +23,8 @@ export function FlashBlockTicker(props: IFlashBlockTickerProps): React.ReactElem
   const flashBlocksRef = React.useRef<IFlashBlock[]>([]);
   const blocksRef = React.useRef<IBlock[]>([]);
 
-  const [flashBlockItems, setFlashBlockItems] = React.useState<Array<{ key: string; blockNumber: number; transactionCount: number; isNew: boolean }>>([]);
-  const [blockItems, setBlockItems] = React.useState<Array<{ key: string; blockNumber: number; isNew: boolean }>>([]);
+  const [flashBlockItems, setFlashBlockItems] = React.useState<Array<{ blockNumber: number; index: number; transactionCount: number; isNew: boolean }>>([]);
+  const [blockItems, setBlockItems] = React.useState<Array<{ blockNumber: number; isNew: boolean }>>([]);
 
   React.useEffect((): (() => void) => {
     const ws = new WebSocket('wss://sepolia.flashblocks.base.org/ws');
@@ -64,9 +64,9 @@ export function FlashBlockTicker(props: IFlashBlockTickerProps): React.ReactElem
   }, [flashBlocksRef, blocksRef]);
 
   React.useEffect((): void => {
-    const newItems = flashBlocks.map((flashBlock, index) => ({
-      key: `${flashBlock.blockNumber}-${flashBlock.index}-${index}`,
+    const newItems = flashBlocks.map((flashBlock) => ({
       blockNumber: flashBlock.blockNumber,
+      index: flashBlock.index,
       transactionCount: flashBlock.transactionCount,
       isNew: !flashBlockItems.some((item) => item.blockNumber === flashBlock.blockNumber && item.transactionCount === flashBlock.transactionCount),
     }));
@@ -75,8 +75,7 @@ export function FlashBlockTicker(props: IFlashBlockTickerProps): React.ReactElem
   }, [flashBlocks]);
 
   React.useEffect((): void => {
-    const newItems = blocks.map((block, index) => ({
-      key: `${block.blockNumber}-${index}`,
+    const newItems = blocks.map((block) => ({
       blockNumber: block.blockNumber,
       isNew: !blockItems.some((item) => item.blockNumber === block.blockNumber),
     }));
@@ -109,7 +108,7 @@ export function FlashBlockTicker(props: IFlashBlockTickerProps): React.ReactElem
       <Stack.Item gutterAfter={PaddingSize.None}>
         <Box variant='tickerView' isFullWidth={true}>
           {flashBlockItems.map((item): React.ReactElement => (
-            <Box key={item.key} variant='tickerItem' isFullWidth={false}>
+            <Box key={`${item.blockNumber}-${item.index}`} variant='tickerItem' isFullWidth={false}>
               <div
                 style={{
                   opacity: item.isNew ? 0 : 1,
@@ -117,7 +116,7 @@ export function FlashBlockTicker(props: IFlashBlockTickerProps): React.ReactElem
                   transition: 'opacity 0.3s ease-out, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 }}
               >
-                <Text variant='small'>{`⚡️ ${item.blockNumber} (${item.transactionCount} txs)`}</Text>
+                <Text variant='small'>{`⚡️ ${item.blockNumber}#${item.index} (${item.transactionCount} txs)`}</Text>
               </div>
             </Box>
           ))}
@@ -125,7 +124,7 @@ export function FlashBlockTicker(props: IFlashBlockTickerProps): React.ReactElem
       </Stack.Item>
       <Box variant='tickerView' isFullWidth={true}>
         {blockItems.map((item): React.ReactElement => (
-          <Box key={item.key} variant='tickerItem' isFullWidth={false}>
+          <Box key={`${item.blockNumber}`} variant='tickerItem' isFullWidth={false}>
             <div
               style={{
                 opacity: item.isNew ? 0 : 1,
