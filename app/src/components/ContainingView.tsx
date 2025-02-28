@@ -77,7 +77,7 @@ export function ContainingView(props: IContainingViewProps): React.ReactElement 
             </Box>
           )}
           <Stack.Item growthFactor={1} shrinkFactor={0} shouldShrinkBelowContentSize={false}>
-            <Box variant='empty' shouldClipContent={true} isScrollableVertically={false}>
+            <Box variant='empty' shouldClipContent={true} isScrollableVertically={false} isFullWidth={true}>
               {props.children}
             </Box>
           </Stack.Item>

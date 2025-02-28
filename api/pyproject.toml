@@ -1,0 +1,13 @@
+[project]
+name = "base-flashblock-speed-challenge-api"
+version = "0.1.0"
+requires-python = "~=3.12"
+dependencies = [
+    "kiba-core[requester, core-api, database-sqlite, web3]==0.5.4.dev19",
+]
+
+[dependency-groups]
+dev = [
+    "kiba-core[types]==0.5.4.dev19",
+    "kiba-build==0.1.11.dev7",
+]
