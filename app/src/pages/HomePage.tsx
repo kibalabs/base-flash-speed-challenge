@@ -77,7 +77,7 @@ export function HomePage(): React.ReactElement {
       setIsSubmitting(true);
       const messageContent = {
         message: 'Base FlashBlocks are so damn fast!',
-        requestTime: dateToString(new Date()),
+        requestTime: dateToString(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", true),
       };
       const baseUrl = typeof window !== 'undefined' && window.KRT_API_URL ? window.KRT_API_URL : 'https://base-flash-speed-challenge-api.tokenpage.xyz';
       const signature = await account.signer.signMessage(JSON.stringify(messageContent, null, 2));

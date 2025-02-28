@@ -169,6 +169,7 @@ class ChallengeManager:
             raise UnauthorizedException('Invalid message')
         try:
             requestTimeString = messageJson['requestTime']
+            print('requestTimeString', requestTimeString)
             requestDate = date_util.datetime_from_string(requestTimeString.rstrip('Z'))  # type: ignore[union-attr]
         except Exception as error:  # noqa: BLE001
             logging.error(f'Error submitting message: {error!s}')
