@@ -230,6 +230,9 @@ export const buildHookeTheme = (): ITheme => {
         'background-color': 'white',
         'border-width': '0',
       }),
+      tickerView: {
+        padding: '1em',
+      },
       empty: {
         'border-radius': '0',
       },

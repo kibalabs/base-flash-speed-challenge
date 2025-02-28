@@ -76,36 +76,10 @@ export function ContainingView(props: IContainingViewProps): React.ReactElement 
               </Stack>
             </Box>
           )}
-          {/* {isLoggedIn && (
-            <HidingView isHidden={!isLoggedIn || !isMenuOpen}>
-              <ResponsiveHidingView hiddenAbove={ScreenSize.Medium}>
-                <Box variant='navBarMenu' zIndex={1000}>
-                  <Stack direction={Direction.Vertical} isFullWidth={true}>
-                    <Button variant={getVariant('sideBar', location.pathname === '/' ? 'sideBarSelected' : null)} text='Home' target='/' onClicked={onMenuClicked} />
-                    <Button variant={getVariant('sideBar', location.pathname.startsWith('/chat') ? 'sideBarSelected' : null)} text='Chat' target='/chat' onClicked={onMenuClicked} />
-                  </Stack>
-                </Box>
-              </ResponsiveHidingView>
-            </HidingView>
-          )} */}
-          <Stack.Item growthFactor={1} shrinkFactor={1} shouldShrinkBelowContentSize={true}>
-            <Stack direction={Direction.Horizontal} childAlignment={Alignment.Start} contentAlignment={Alignment.Fill} shouldAddGutters={false} isFullWidth={true}>
-              {/* {isLoggedIn && (
-                <ResponsiveHidingView hiddenBelow={ScreenSize.Medium}>
-                  <Box variant='sideBar' isFullHeight={true} width='250px'>
-                    <Stack direction={Direction.Vertical} shouldAddGutters={false} isFullWidth={true}>
-                      <Button variant={getVariant('sideBar', location.pathname === '/' ? 'sideBarSelected' : null)} text='Home' target='/' onClicked={onMenuClicked} />
-                      <Button variant={getVariant('sideBar', location.pathname.startsWith('/chat') ? 'sideBarSelected' : null)} text='Chat' target='/chat' onClicked={onMenuClicked} />
-                    </Stack>
-                  </Box>
-                </ResponsiveHidingView>
-              )} */}
-              <Stack.Item growthFactor={1} shrinkFactor={1} shouldShrinkBelowContentSize={true}>
-                <Box variant='empty' shouldClipContent={true} isFullHeight={true} isScrollableVertically={false}>
-                  {props.children}
-                </Box>
-              </Stack.Item>
-            </Stack>
+          <Stack.Item growthFactor={1} shrinkFactor={0} shouldShrinkBelowContentSize={false}>
+            <Box variant='empty' shouldClipContent={true} isScrollableVertically={false}>
+              {props.children}
+            </Box>
           </Stack.Item>
         </Stack>
       )}
