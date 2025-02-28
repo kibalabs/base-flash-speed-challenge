@@ -10,6 +10,7 @@ import { ContainingView } from './components/ContainingView';
 import { GlobalsProvider, IGlobals } from './GlobalsContext';
 import { PageDataProvider } from './PageDataContext';
 import { HomePage } from './pages/HomePage';
+import { LeaderboardPage } from './pages/LeaderboardPage';
 import { buildHookeTheme } from './theme';
 import './fonts.css';
 
@@ -34,6 +35,7 @@ const globals: IGlobals = {
 
 const routes: IRoute<IGlobals>[] = [
   { path: '/', page: HomePage },
+  { path: '/leaderboard', page: LeaderboardPage },
 ];
 
 interface IAppProps extends IHeadRootProviderProps {

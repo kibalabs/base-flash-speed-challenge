@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { dateToString } from '@kibalabs/core';
+import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, getVariant, Image, MarkdownText, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { useOnLinkWeb3AccountsClicked, useWeb3Account, useWeb3ChainId } from '@kibalabs/web3-react';
 
@@ -34,6 +35,7 @@ const BASE_SEPOLIA_PARAMS = {
 };
 
 export function HomePage(): React.ReactElement {
+  const navigator = useNavigator();
   const chainId = useWeb3ChainId();
   const account = useWeb3Account();
   const onLinkAccountsClicked = useOnLinkWeb3AccountsClicked();
@@ -121,9 +123,10 @@ export function HomePage(): React.ReactElement {
             <Text variant='large' alignment={TextAlignment.Center}>Connect your wallet to get started.</Text>
           </Stack>
           <Spacing variant={PaddingSize.Wide} />
-          {account == undefined ? (
+          {account === undefined && (
             <Text>Please use this app on a browser with a wallet connected.</Text>
-          ) : account == null ? (
+          )}
+          {account == null ? (
             <Button
               variant='primary'
               text='Connect Wallet'
@@ -233,7 +236,6 @@ export function HomePage(): React.ReactElement {
                   <Button
                     variant='primary'
                     text='Share'
-                    // iconLeft={<KibaIcon iconId='ion-logo-twitter' />}
                     onClicked={(): void => {
                       const text = '🏆 I just played @Base FlashBlock Speed Challenge!\n\n'
                         + `Position: #${currentEntry.position}\n`
@@ -244,6 +246,11 @@ export function HomePage(): React.ReactElement {
                       const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
                       window.open(tweetUrl, '_blank');
                     }}
+                  />
+                  <Button
+                    variant='secondary'
+                    text='View Leaderboard'
+                    onClicked={(): void => navigator.navigateTo('/leaderboard')}
                   />
                 </Stack>
               </Stack>

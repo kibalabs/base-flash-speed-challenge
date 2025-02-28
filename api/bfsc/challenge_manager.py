@@ -2,6 +2,7 @@ import datetime
 import os
 import time
 import typing
+from enum import Enum
 
 import aiosqlite
 from core import logging
@@ -28,6 +29,14 @@ readEthClient = RestEthClient(url='https://sepolia-preconf.base.org', requester=
 privateKey = os.environ['PRIVATE_KEY']
 account = w3.eth.account.from_key(privateKey)
 databaseLocation = './data/leaderboard.db'
+
+
+class LeaderboardOrderBy(str, Enum):
+    RATIO = 'ratio'
+    REACTION_MILLIS = 'reaction_millis'
+    FLASH_BLOCK_MILLIS = 'flash_block_millis'
+    BLOCK_MILLIS = 'block_millis'
+    SUBMIT_DATE = 'submit_date'
 
 
 async def init_db() -> None:
@@ -92,6 +101,54 @@ async def get_pending_block(ethClient: RestEthClient, shouldHydrateTransactions:
     return typing.cast(BlockData, method_formatters.PYTHONIC_RESULT_FORMATTERS[RPC.eth_getBlockByNumber](response['result']))
 
 
+async def get_leaderboard(order_by: str = LeaderboardOrderBy.RATIO, limit: int = 500) -> typing.List[LeaderboardEntry]:
+    order_by_field = order_by or LeaderboardOrderBy.RATIO
+    order_direction = 'ASC' if order_by in [LeaderboardOrderBy.RATIO, LeaderboardOrderBy.REACTION_MILLIS, LeaderboardOrderBy.FLASH_BLOCK_MILLIS, LeaderboardOrderBy.BLOCK_MILLIS] else 'DESC'
+    async with aiosqlite.connect(databaseLocation) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            f"""
+            SELECT
+                address,
+                request_date,
+                submit_date,
+                block_number,
+                transaction_hash,
+                flash_block_millis,
+                block_millis,
+                reaction_millis,
+                ratio,
+                (SELECT COUNT(*) + 1
+                 FROM submissions s2
+                 WHERE ABS(s2.ratio - 1) < ABS(s1.ratio - 1)) as position
+            FROM submissions s1
+            ORDER BY
+                CASE
+                    WHEN ? = 'ratio' THEN ABS(ratio - 1)
+                    ELSE {order_by_field}
+                END {order_direction}
+            LIMIT ?
+            """,
+            (order_by_field, limit),
+        )
+        rows = await cursor.fetchall()
+        return [
+            LeaderboardEntry(
+                address=row['address'],
+                requestDate=date_util.datetime_from_string(row['request_date']),
+                submitDate=date_util.datetime_from_string(row['submit_date']),
+                blockNumber=row['block_number'],
+                transactionHash=row['transaction_hash'],
+                flashBlockMillis=row['flash_block_millis'],
+                blockMillis=row['block_millis'],
+                reactionMillis=row['reaction_millis'],
+                ratio=row['ratio'],
+                position=row['position'],
+            )
+            for row in rows
+        ]
+
+
 class ChallengeManager:
     async def connect(self) -> None:
         await init_db()
@@ -103,7 +160,7 @@ class ChallengeManager:
         submitDate = date_util.datetime_from_now()
         try:
             messageJson = typing.cast(JsonObject, json_util.loads(message))
-            messageHash = encode_defunct(text=messageJson['message'])  # type: ignore[arg-type]
+            messageHash = encode_defunct(text=message)
             signerAddress = w3.eth.account.recover_message(messageHash, signature=signature)
         except Exception as error:  # noqa: BLE001
             logging.error(f'Error submitting message: {error!s}')
@@ -142,7 +199,7 @@ class ChallengeManager:
             startTime = time.time()
             flashBlockSeconds: float = -1.0
             while time.time() - startTime < 10:  # noqa: PLR2004
-                flashBlockSeconds = time.time() - startTime
+                flashBlockSeconds = (time.time() - startTime) + 0.001
                 pendingBlock = await get_pending_block(ethClient=readEthClient, shouldHydrateTransactions=False)
                 if any(transactionHash == f'0x{tx.hex()}' for tx in pendingBlock['transactions']):  # type: ignore[union-attr]
                     break
@@ -152,7 +209,7 @@ class ChallengeManager:
         except Exception as error:  # noqa: BLE001
             logging.error(f'Error submitting transaction: {error!s}')
             raise UnauthorizedException('Failed to submit transaction')
-        if flashBlockSeconds < 0.0:
+        if flashBlockSeconds <= 0.0:
             raise UnauthorizedException('Transaction not included in flashblock')
         flashBlockMillis = int(flashBlockSeconds * 1000)
         reactionMillis = int((submitDate - requestDate).total_seconds() * 1000)
@@ -183,3 +240,6 @@ class ChallengeManager:
             position=position,
             ratio=ratio,
         )
+
+    async def get_leaderboard(self, order_by: str = LeaderboardOrderBy.RATIO) -> typing.List[LeaderboardEntry]:
+        return await get_leaderboard(order_by=order_by)

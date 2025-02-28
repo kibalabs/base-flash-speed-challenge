@@ -239,7 +239,7 @@ export const buildHookeTheme = (): ITheme => {
         'flex-direction': 'row',
         'align-items': 'start',
         'justify-content': 'start',
-        'gap': '1em',
+        gap: '1em',
       },
       tickerItem: {
         'background-color': '#171717',

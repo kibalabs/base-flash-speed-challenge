@@ -10,3 +10,11 @@ class SubmitMessageRequest(BaseModel):
 
 class SubmitMessageResponse(BaseModel):
     entry: LeaderboardEntry
+
+
+class GetLeaderboardRequest(BaseModel):
+    pass
+
+
+class GetLeaderboardResponse(BaseModel):
+    entries: list[LeaderboardEntry]

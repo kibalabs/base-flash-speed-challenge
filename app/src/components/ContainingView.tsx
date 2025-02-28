@@ -1,11 +1,10 @@
 import React from 'react';
 
 import { ISingleAnyChildProps, useLocation } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, IconButton, Image, KibaIcon, LinkBase, ResponsiveHidingView, ScreenSize, Stack, Text } from '@kibalabs/ui-react';
-import { useWeb3Account, useWeb3ChainId, useWeb3LoginSignature } from '@kibalabs/web3-react';
+import { Alignment, Box, Button, Direction, Image, LinkBase, ResponsiveHidingView, ScreenSize, Stack, Text } from '@kibalabs/ui-react';
+import { useWeb3Account, useWeb3ChainId } from '@kibalabs/web3-react';
 
 import { AccountView } from './AccountView';
-import { LoadingIndicator } from './LoadingIndicator';
 
 interface IContainingViewProps extends ISingleAnyChildProps {
   className?: string;
@@ -14,8 +13,7 @@ interface IContainingViewProps extends ISingleAnyChildProps {
 export function ContainingView(props: IContainingViewProps): React.ReactElement {
   const chainId = useWeb3ChainId();
   const account = useWeb3Account();
-  const loginSignature = useWeb3LoginSignature();
-  const isLoggedIn = chainId != null && account != null && loginSignature != null;
+  const isLoggedIn = chainId != null && account != null;
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
   const location = useLocation();
   const isChatPage = location.pathname === '/chat';
