@@ -121,7 +121,9 @@ export function HomePage(): React.ReactElement {
             <Text variant='large' alignment={TextAlignment.Center}>Connect your wallet to get started.</Text>
           </Stack>
           <Spacing variant={PaddingSize.Wide} />
-          {account == null ? (
+          {account == undefined ? (
+            <Text>Please use this app on a browser with a wallet connected.</Text>
+          ) : account == null ? (
             <Button
               variant='primary'
               text='Connect Wallet'

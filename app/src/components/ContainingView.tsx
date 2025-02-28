@@ -62,11 +62,6 @@ export function ContainingView(props: IContainingViewProps): React.ReactElement 
                   <AccountView address={account.address} />
                 </ResponsiveHidingView>
               )}
-              {isLoggedIn && (
-                <ResponsiveHidingView hiddenAbove={ScreenSize.Medium}>
-                  <IconButton icon={<KibaIcon iconId='ion-menu-outline' />} label='Menu' onClicked={onMenuClicked} />
-                </ResponsiveHidingView>
-              )}
             </Stack>
           </Box>
         )}

@@ -232,17 +232,18 @@ export const buildHookeTheme = (): ITheme => {
         'border-width': '0',
       }),
       tickerView: {
-        padding: '0.25em 0.5em',
+        padding: '0.05em 0.5em',
         overflow: 'hidden',
         'white-space': 'nowrap',
         display: 'flex',
         'flex-direction': 'row',
         'align-items': 'start',
         'justify-content': 'start',
+        'gap': '1em',
       },
       tickerItem: {
-        'background-color': '$colors.backgroundLight01',
-        padding: '0.1em 2em',
+        'background-color': '#171717',
+        padding: '0.1em 1em',
       },
       empty: {
         'border-radius': '0',
